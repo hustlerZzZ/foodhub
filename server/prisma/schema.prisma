@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  fullName   String
+  password   String
+  role       Role     @default(USER)
+  created_At DateTime @default(now())
+  Order      Order[]
+}
+
+model Restaurant {
+  id         Int      @id @default(autoincrement())
+  name       String
+  rating     Int      @default(0)
+  created_At DateTime @default(now())
+  Menu       Menu[]
+}
+
+model Menu {
+  id            Int          @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float
+  restaurant_Id Int
+  restaurant    Restaurant   @relation(fields: [restaurant_Id], references: [id])
+  created_At    DateTime     @default(now())
+  OrderItem     Order_Item[]
+}
+
+model Order {
+  id           Int          @id @default(autoincrement())
+  order_Status Status       @default(PENDING)
+  user_Id      Int
+  user         User         @relation(fields: [user_Id], references: [id])
+  total        Float
+  created_At   DateTime     @default(now())
+  OrderItem    Order_Item[]
+}
+
+model Order_Item {
+  id         Int      @id @default(autoincrement())
+  order_Id   Int
+  order      Order    @relation(fields: [order_Id], references: [id])
+  menu_Id    Int
+  menu       Menu     @relation(fields: [menu_Id], references: [id])
+  quantity   Int
+  created_At DateTime @default(now())
+}
